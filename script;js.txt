@@ -1,1128 +1,538 @@
-/* Variáveis e configurações globais */
-:root {
-    /* Cores principais atualizadas */
-    --primary: #0a3321;
-    --primary-light: #145434;
-    --accent: #1eb234;
-    --accent-light: #25d940;
-    --accent-bright: #2fff4a;
-    --accent-dark: #167d25;
-    
-    --gradient-start: #0a3321;
-    --gradient-middle: #1eb234;
-    --gradient-end: #145434;
+// utils.js
+const DateUtils = {
+    format(date) {
+        if (!date) return '';
+        return new Date(date).toISOString().slice(0, 19).replace('T', ' ');
+    },
 
-
-    /* Cores de status com mais contraste */
-    --success: #00e676;
-    --error: #ff5252;
-    --warning: #ffd740;
-    
-    /* Backgrounds com mais contraste */
-    --bg-primary: #0a3321;
-    --bg-secondary: #145434;
-    --bg-tertiary: #0d2b1d;
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.9);
-    --text-tertiary: rgba(255, 255, 255, 0.75);
-    
-    /* Gradiente melhorado */
-    --gradient-primary: linear-gradient(
-        135deg,
-        #0a3321 0%,
-        #1eb234 25%,
-        #145434 50%,
-        #1eb234 75%,
-        #0a3321 100%
-    );
-
-    --gradient-dark: linear-gradient(135deg, #103812 0%, #1a5d3d 100%);
-    
-    /* Sombras */
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.15);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
-    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.08);
-    
-    /* Border radius */
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
-    
-    /* Transições */
-    --transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
-    
-    /* Espaçamento */
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-    
-    /* Z-index */
-    --z-negative: -1;
-    --z-elevate: 1;
-    --z-sticky: 100;
-    --z-drawer: 200;
-    --z-modal: 300;
-    --z-popover: 400;
-    --z-maximum: 999;
-}
-
-/* Reset e estilos base */
-*, *::before, *::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-html {
-    font-size: 16px;
-    scroll-behavior: smooth;
-}
-
-body {
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    font-family: 'Poppins', sans-serif;
-    line-height: 1.6;
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-/* Utilitários de animação */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
+    now() {
+        return new Date().toISOString().slice(0, 19).replace('T', ' ');
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+};
+
+const NotificationSystem = {
+    show(message, type = 'info') {
+        // Remove notificações existentes
+        const existingNotifications = document.querySelectorAll('.feedback-message');
+        existingNotifications.forEach(n => n.remove());
+
+        const notification = document.createElement('div');
+        notification.className = `feedback-message ${type}`;
+        notification.innerHTML = `
+            <i class="ri-${type === 'success' ? 'check-line' : 'error-warning-line'}"></i>
+            <span>${message}</span>
+        `;
+        document.body.appendChild(notification);
+
+        // Animação de entrada
+        setTimeout(() => notification.classList.add('show'), 10);
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    },
+
+    success(message) {
+        this.show(message, 'success');
+    },
+
+    error(message) {
+        this.show(message, 'error');
     }
-}
+};
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-15px);
+const FetchInterceptor = {
+    async fetch(options) {
+        try {
+            const response = await fetch(options.url, {
+                method: options.method || 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                },
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+
+            if (!response.ok) {
+                throw new Error('Erro na requisição');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            throw error;
+        }
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+};
+
+const appConfigs = {
+    cursos: {
+        0: 'Supervisão de Soldados',
+        1: 'Aula de Segurança',
+        2: 'Aula de Promotor'
+    },
+    locais: {
+        0: 'Batalhões',
+        1: 'Corredores',
+        2: 'Cabanas do Batalhão Auxiliar',
+        3: 'Quarto particular',
+        4: 'Sala de aplicação 1',
+        5: 'Sala de aplicação 2',
+        6: 'Sala de aplicação 3',
+        7: 'Sala de aplicação 4'
     }
+};
+
+// Sistema de Loading
+document.addEventListener('DOMContentLoaded', () => {
+    initializeLoader();
+});
+
+function initializeLoader() {
+    const loader = document.getElementById('loader');
+    if (!loader) return;
+
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        loader.style.opacity = '0';
+        setTimeout(() => {
+            loader.style.display = 'none';
+            document.body.style.overflow = 'visible';
+            
+            document.querySelector('.main-title')?.classList.add('fade-in');
+            document.querySelector('.form-container')?.classList.add('fade-in');
+        }, 500);
+    }, 1500);
 }
 
-@keyframes gentlePulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-    100% { transform: scale(1); }
-}
+// formView.js
+class FormView {
+    constructor() {
+        this.alunos = [];
+        this.id_acc = 1;
+        this.isLoading = false;
+        this.finished = false;
 
-@keyframes gradient-animation {
-    0% {
-        background-position: 0% 50%;
+        this.initialize();
     }
-    50% {
-        background-position: 100% 50%;
+
+    initialize() {
+        this.setupEventListeners();
+        this.loadQueryParams();
+
+        const dtInput = document.querySelector('[name="dt_inicio"]');
+        if (dtInput) {
+            const now = new Date();
+            dtInput.value = now.toISOString().slice(0, 16);
+        }
     }
-    100% {
-        background-position: 0% 50%;
+
+    setupEventListeners() {
+        // Form submit
+        const form = document.getElementById('aula-form');
+        if (form) {
+            form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
+
+        // Aula tutorada checkbox
+        const aulaTutorada = document.querySelector('[name="aula_tutorada"]');
+        if (aulaTutorada) {
+            aulaTutorada.addEventListener('change', () => this.toggleTutorField());
+        }
+
+        // Curso select
+        const cursoSelect = document.querySelector('[name="curso"]');
+        if (cursoSelect) {
+            cursoSelect.addEventListener('change', (e) => this.handleCursoChange(e));
+        }
+
+        // Adicionar aluno
+        const addButton = document.querySelector('.add-student-button');
+        if (addButton) {
+            addButton.addEventListener('click', () => this.addStudent());
+        }
+
+        // Input de novo aluno
+        const newStudentInput = document.getElementById('new-student-input');
+        if (newStudentInput) {
+            newStudentInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.addStudent();
+                }
+            });
+        }
+
+        // Validações de campos obrigatórios
+        const requiredInputs = document.querySelectorAll('input[required], select[required]');
+        requiredInputs.forEach(input => {
+            input.addEventListener('invalid', (e) => {
+                e.preventDefault();
+                this.showFieldError(input);
+            });
+        });
     }
-}
 
-@keyframes pulse {
-    0% { opacity: 0.5; width: 80px; }
-    50% { opacity: 1; width: 100px; }
-    100% { opacity: 0.5; width: 80px; }
-}
+    handleCursoChange(e) {
+        const confirmContainer = document.querySelector('.confirm-container');
+        if (confirmContainer) {
+            confirmContainer.remove();
+        }
 
-@keyframes bounceIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
+        if (e.target.value === '0') { // Supervisão de Soldados
+            const container = document.createElement('div');
+            container.className = 'confirm-container fade-in form-field';
+            container.innerHTML = `
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" name="system_confirm" required>
+                    <span class="checkbox-custom"></span>
+                    <span>Confirmo que verifiquei que o soldado criou conta no system</span>
+                </label>
+            `;
+            e.target.parentNode.after(container);
+        }
     }
-    50% {
-        opacity: 0.9;
-        transform: scale(1.1);
+
+    showFieldError(field) {
+        const fieldName = field.getAttribute('name');
+        const errorMessages = {
+            'nick': 'Digite o nickname do instrutor',
+            'dt_inicio': 'Selecione a data e hora',
+            'curso': 'Selecione o curso',
+            'local': 'Selecione o local',
+            'nick_tutor': 'Digite o nickname do tutor',
+            'system_confirm': 'Confirme a verificação da conta no system'
+        };
+
+        NotificationSystem.error(errorMessages[fieldName] || 'Preencha este campo');
     }
-    80% {
-        opacity: 1;
-        transform: scale(0.89);
+
+    toggleTutorField() {
+        const tutorField = document.querySelector('.tutor-field');
+        const checkbox = document.querySelector('[name="aula_tutorada"]');
+        
+        if (tutorField && checkbox) {
+            if (checkbox.checked) {
+                tutorField.classList.remove('hidden');
+                tutorField.querySelector('input').required = true;
+            } else {
+                tutorField.classList.add('hidden');
+                tutorField.querySelector('input').required = false;
+                tutorField.querySelector('input').value = '';
+            }
+        }
     }
-    100% {
-        opacity: 1;
-        transform: scale(1);
+
+createStudentElement(aluno) {
+        const studentCard = document.createElement('div');
+        studentCard.className = 'student-card';
+        studentCard.dataset.id = aluno.id;
+
+        const studentHtml = `
+            <div class="student-info">
+                <input 
+                    type="text" 
+                    class="student-name"
+                    value="${aluno.nome}"
+                    onchange="window.formView.updateStudent(${aluno.id}, 'nome', this.value)"
+                >
+            </div>
+            <div class="status-buttons">
+                ${this.createStatusButtons(aluno)}
+            </div>
+        `;
+
+        studentCard.innerHTML = studentHtml;
+
+        // Se o status for "Caiu", adiciona o container de link
+        if (aluno.status === 3) {
+            this.addProofContainer(aluno.id);
+        }
+
+        return studentCard;
     }
-}
 
-/* Classes de utilidade */
-.hidden {
-    display: none !important;
-}
+    createStatusButtons(aluno) {
+        const statusConfig = {
+            1: { icon: 'close-circle', class: 'status-failed', tooltip: 'Reprovado' },
+            2: { icon: 'check-circle', class: 'status-approved', tooltip: 'Aprovado' },
+            3: { icon: 'time', class: 'status-pending', tooltip: 'Caiu' }
+        };
 
-.fade-in {
-    animation: fadeIn var(--transition-normal) forwards;
-}
+        const currentStatus = statusConfig[aluno.status];
+        const nextStatus = aluno.status === 2 ? 3 : aluno.status === 3 ? 1 : 2;
 
-.slide-up {
-    animation: slideUp var(--transition-normal) forwards;
-}
-
-.slide-down {
-    animation: slideDown var(--transition-normal) forwards;
-}
-
-/* Loader */
-.loader {
-    position: fixed;
-    inset: 0;
-    background: var(--bg-primary);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: var(--z-maximum);
-    transition: opacity var(--transition-slow);
-}
-
-.loader-content {
-    text-align: center;
-    animation: gentlePulse 2s ease-in-out infinite;
-}
-
-.loader-content img {
-    width: 90px;
-    height: 90px;
-    margin-bottom: var(--spacing-lg);
-    filter: drop-shadow(0 0 10px rgba(44, 74, 62, 0.3));
-    transition: filter var(--transition-normal);
-}
-
-.loader-bar {
-    width: 240px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    position: relative;
-}
-
-.loader-bar::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 30%;
-    background: var(--gradient-primary);
-    background-size: 400% 400%;
-    animation: 
-        loading 1.8s ease-in-out infinite,
-        gradient-animation 15s ease infinite;
-    border-radius: var(--radius-xl);
-    box-shadow: 0 0 15px var(--accent);
-}
-
-@keyframes loading {
-    0% {
-        transform: translateX(-100%);
+        return `
+            <button 
+                type="button" 
+                class="status-button ${currentStatus.class} tooltip"
+                data-tooltip="${currentStatus.tooltip}"
+                onclick="window.formView.updateStudent(${aluno.id}, 'status', ${nextStatus})"
+            >
+                <i class="ri-${currentStatus.icon}-line"></i>
+            </button>
+            <button 
+                type="button" 
+                class="status-button delete-button tooltip" 
+                data-tooltip="Remover aluno"
+                onclick="window.formView.removeStudent(${aluno.id})"
+            >
+                <i class="ri-delete-bin-line"></i>
+            </button>
+        `;
     }
-    50% {
-        width: 35%;
+
+    addProofContainer(studentId) {
+        const proofContainerId = `proof-container-${studentId}`;
+        let proofContainer = document.getElementById(proofContainerId);
+        
+        if (!proofContainer) {
+            proofContainer = document.createElement('div');
+            proofContainer.id = proofContainerId;
+            proofContainer.className = 'proof-container fade-in';
+            proofContainer.innerHTML = `
+                <div class="proof-input-group">
+                    <i class="ri-link-line"></i>
+                    <input 
+                        type="text" 
+                        class="proof-input"
+                        placeholder="Insira o link comprobatório"
+                        required
+                        onchange="window.formView.updateStudent(${studentId}, 'proofLink', this.value)"
+                    >
+                </div>
+            `;
+            
+            const studentsList = document.querySelector('.students-section');
+            if (studentsList) {
+                studentsList.appendChild(proofContainer);
+            }
+        }
     }
-    100% {
-        transform: translateX(350%);
+
+    removeProofContainer(studentId) {
+        const proofContainer = document.getElementById(`proof-container-${studentId}`);
+        if (proofContainer) {
+            proofContainer.classList.add('fade-out');
+            setTimeout(() => proofContainer.remove(), 300);
+        }
     }
-}
 
-/* Título Principal - Versão melhorada */
-.main-title {
-    text-align: center;
-    margin: var(--spacing-xl) auto var(--spacing-xl);
-    padding: 0 var(--spacing-md);
-    max-width: 800px;
-    animation: slideDown var(--transition-normal) forwards;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+    addStudent() {
+        const input = document.getElementById('new-student-input');
+        if (!input || !input.value.trim()) {
+            NotificationSystem.error('Adicione o nick do aluno');
+            input.classList.add('shake');
+            setTimeout(() => input.classList.remove('shake'), 300);
+            return;
+        }
 
-.main-title::before {
-    content: '';
-    position: absolute;
-    top: -30%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 180px;
-    height: 180px;
-    background: var(--gradient-primary);
-    background-size: 400% 400%;
-    filter: blur(90px);
-    opacity: 0.15;
-    animation: gradient-animation 15s ease infinite;
-    z-index: var(--z-negative);
-    border-radius: 50%;
-}
+        const aluno = {
+            id: this.id_acc++,
+            nome: input.value.trim(),
+            status: 1, // Status inicial: Reprovado
+            proofLink: '' // Link comprobatório (quando necessário)
+        };
 
-.main-title::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 3px;
-    background: var(--gradient-primary);
-    background-size: 400% 400%;
-    animation: 
-        pulse 2s infinite,
-        gradient-animation 15s ease infinite;
-    border-radius: var(--radius-sm);
-}
+        this.alunos.push(aluno);
+        
+        const studentsList = document.getElementById('students-list');
+        if (studentsList) {
+            const studentElement = this.createStudentElement(aluno);
+            studentsList.appendChild(studentElement);
+            studentElement.classList.add('fade-in');
+        }
 
-.main-title h1 {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 600;
-    line-height: 1.2;
-    background: var(--gradient-primary);
-    background-size: 400% 400%;
-    animation: gradient-animation 15s ease infinite;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    position: relative;
-    margin-bottom: var(--spacing-md);
-}
-
-.main-title img {
-    width: 70px;
-    height: 70px;
-    margin-bottom: var(--spacing-sm);
-    filter: drop-shadow(0 0 8px rgba(24, 150, 0, 0.2));
-    animation: gentlePulse 3s ease-in-out infinite;
-    transition: transform var(--transition-normal), filter var(--transition-normal);
-}
-
-.main-title img:hover {
-    transform: scale(1.1) rotate(5deg);
-    filter: drop-shadow(0 0 12px rgba(24, 150, 0, 0.4));
-}
-
-/* Container Principal e Form Card */
-.form-container {
-    max-width: 1200px;
-    margin: 0 auto var(--spacing-xl);
-    padding: 0 var(--spacing-md);
-    position: relative;
-    z-index: var(--z-elevate);
-}
-
-/* Efeitos de Glow */
-.glow {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(100px);
-    opacity: 0.15;
-    z-index: var(--z-negative);
-    background: var(--gradient-primary);
-    background-size: 400% 400%;
-}
-
-.glow-1 {
-    width: 250px;
-    height: 250px;
-    top: -100px;
-    left: 15%;
-    animation: 
-        gradient-animation 15s ease infinite,
-        pulseGlow 8s ease-in-out infinite;
-}
-
-.glow-2 {
-    width: 300px;
-    height: 300px;
-    bottom: -100px;
-    right: 15%;
-    animation: 
-        gradient-animation 15s ease infinite,
-        pulseGlow 8s ease-in-out infinite;
-    animation-delay: -7s;
-}
-
-@keyframes pulseGlow {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.15;
+        input.value = '';
+        input.focus();
     }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.2;
+
+    removeStudent(id) {
+        const studentCard = document.querySelector(`.student-card[data-id="${id}"]`);
+        if (studentCard) {
+            studentCard.classList.add('fade-out');
+            this.removeProofContainer(id);
+            setTimeout(() => {
+                this.alunos = this.alunos.filter(a => a.id !== id);
+                studentCard.remove();
+            }, 300);
+        }
     }
-}
 
-.form-card {
-    background: var(--bg-secondary);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-xl);
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    animation: slideUp var(--transition-normal) forwards;
-    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-}
-
-.form-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.3),
-        0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-
-
-/* Grid do Formulário */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: var(--spacing-xl);
-    position: relative;
-}
-
-/* Campos de Formulário */
-.form-field {
-    margin-bottom: var(--spacing-lg);
-    position: relative;
-    z-index: 2;
-}
-
-.form-field label {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-.form-field label i {
-    color: var(--accent-lighter);
-    font-size: 1.1rem;
-}
-
-/* Estilos base para inputs e selects */
-.input-field,
-.select-field,
-.textarea-field {
-    width: 100%;
-    background: rgba(28, 41, 34, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-md);
-    color: var(--text-primary);
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.95rem;
-    padding: 12px 16px;
-    transition: all var(--transition-normal);
-}
-
-/* Estilos específicos para textarea */
-.textarea-field {
-    min-height: 120px;
-    max-height: 300px;
-    resize: vertical;
-    line-height: 1.6;
-    margin: var(--spacing-xs) 0;
-    padding: var(--spacing-md);
-}
-
-/* Estados hover e focus */
-.input-field:hover,
-.select-field:hover,
-.textarea-field:hover {
-    background: rgba(28, 41, 34, 0.5);
-    border-color: rgba(255, 255, 255, 0.15);
-}
-
-.input-field:focus,
-.select-field:focus,
-.textarea-field:focus {
-    outline: none;
-    background: rgba(28, 41, 34, 0.6);
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(44, 74, 62, 0.2);
-}
-
-/* Placeholder */
-.input-field::placeholder,
-.textarea-field::placeholder {
-    color: var(--text-tertiary);
-    font-size: 0.9rem;
-}
-
-/* Select personalizado */
-.select-field {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.5)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 20px;
-    padding-right: 40px;
-}
-
-.select-field option {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-}
-
-/* Scrollbar personalizada */
-.textarea-field::-webkit-scrollbar {
-    width: 8px;
-}
-
-.textarea-field::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: var(--radius-sm);
-}
-
-.textarea-field::-webkit-scrollbar-thumb {
-    background: rgba(44, 74, 62, 0.3);
-    border-radius: var(--radius-sm);
-    transition: var(--transition-normal);
-}
-
-.textarea-field::-webkit-scrollbar-thumb:hover {
-    background: rgba(44, 74, 62, 0.4);
-}
-
-/* Checkbox personalizado */
-.checkbox-wrapper {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    cursor: pointer;
-    user-select: none;
-}
-
-.checkbox-wrapper input[type="checkbox"] {
-    display: none;
-}
-
-.checkbox-custom {
-    width: 20px;
-    height: 20px;
-    background: rgba(28, 41, 34, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-normal);
-}
-
-.checkbox-custom::after {
-    content: '';
-    width: 12px;
-    height: 12px;
-    background: var(--accent-lighter);
-    border-radius: 4px;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: all var(--transition-normal);
-}
-
-.checkbox-wrapper input[type="checkbox"]:checked + .checkbox-custom::after {
-    opacity: 1;
-    transform: scale(1);
-}
-
-/* Seção de Alunos */
-.students-section {
-    background: rgba(28, 41, 34, 0.3);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-lg);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 1;
-}
-
-.students-header {
-    margin-bottom: var(--spacing-lg);
-}
-
-.students-input-group {
-    display: flex;
-    gap: var(--spacing-sm);
-}
-
-.add-student-button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    box-shadow: 0 2px 8px rgba(44, 74, 62, 0.2);
-    position: relative;
-    z-index: 2;
-}
-
-.add-student-button:hover {
-    background: var(--accent-darker);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(44, 74, 62, 0.3);
-}
-
-.add-student-button i {
-    font-size: 1.2rem;
-}
-
-/* Lista de Alunos */
-.students-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    max-height: 400px;
-    overflow-y: auto;
-    padding-right: var(--spacing-sm);
-    position: relative;
-    z-index: 2;
-}
-
-.students-list::-webkit-scrollbar {
-    width: 8px;
-}
-
-.students-list::-webkit-scrollbar-track {
-    background: rgba(28, 41, 34, 0.2);
-    border-radius: var(--radius-sm);
-}
-
-.students-list::-webkit-scrollbar-thumb {
-    background: rgba(44, 74, 62, 0.3);
-    border-radius: var(--radius-sm);
-}
-
-.students-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(44, 74, 62, 0.4);
-}
-
-/* Cards de Alunos */
-.student-card {
-    background: rgba(28, 41, 34, 0.4);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all var(--transition-normal);
-    animation: slideUp var(--transition-normal) forwards;
-    position: relative;
-    overflow: hidden;
-    z-index: 3;
-}
-
-.student-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.05),
-        transparent
-    );
-    transform: translateX(-100%);
-    transition: transform 0.5s ease;
-}
-
-.student-card:hover::before {
-    transform: translateX(100%);
-}
-
-.student-card:hover {
-    background: rgba(28, 41, 34, 0.5);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Informações do Aluno */
-.student-info {
-    flex: 1;
-    margin-right: var(--spacing-md);
-    position: relative;
-    z-index: 4;
-}
-
-.student-name {
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    font-family: 'Poppins', sans-serif;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-sm);
-    width: 100%;
-    transition: all var(--transition-normal);
-}
-
-.student-name:hover {
-    background: rgba(44, 74, 62, 0.1);
-}
-
-.student-name:focus {
-    outline: none;
-    background: rgba(44, 74, 62, 0.15);
-    box-shadow: 0 0 0 2px rgba(44, 74, 62, 0.2);
-}
-
-/* Botões de Status */
-.status-buttons {
-    display: flex;
-    gap: var(--spacing-sm);
-    align-items: center;
-    position: relative;
-    z-index: 5;
-}
-
-.status-button {
-    background: transparent;
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    position: relative;
-}
-
-.status-button i {
-    font-size: 1.2rem;
-    transition: all var(--transition-normal);
-    z-index: 6;
-}
-
-/* Tooltips melhorados */
-.tooltip {
-    position: relative;
-}
-
-.tooltip::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) translateY(5px);
-    background: rgba(28, 41, 34, 0.95);
-    color: white;
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    font-size: 0.8rem;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition-normal);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 10;
-    pointer-events: none;
-}
-
-.tooltip:hover::after {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-}
-
-/* Status: Reprovado */
-.status-failed {
-    color: var(--error);
-}
-
-.status-failed:hover {
-    background: rgba(169, 61, 61, 0.15);
-    transform: scale(1.1);
-}
-
-.status-failed:hover i {
-    animation: shake 0.5s ease;
-}
-
-/* Status: Aprovado */
-.status-approved {
-    color: var(--success);
-}
-
-.status-approved:hover {
-    background: rgba(45, 90, 70, 0.15);
-    transform: scale(1.1);
-}
-
-.status-approved:hover i {
-    animation: pulse 0.5s ease;
-}
-
-/* Status: Pendente */
-.status-pending {
-    color: var(--warning);
-}
-
-.status-pending:hover {
-    background: rgba(150, 113, 61, 0.15);
-    transform: scale(1.1);
-}
-
-.status-pending:hover i {
-    animation: spin 1s linear infinite;
-}
-
-/* Botão Deletar */
-.delete-button {
-    color: var(--text-tertiary);
-}
-
-.delete-button:hover {
-    background: rgba(169, 61, 61, 0.1);
-    color: var(--error);
-    transform: scale(1.1);
-}
-
-.delete-button:hover i {
-    animation: shake 0.5s ease;
-}
-
-/* Sistema de Notificações */
-.feedback-message {
-    position: fixed;
-    top: var(--spacing-xl);
-    right: var(--spacing-xl);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: var(--radius-md);
-    color: white;
-    font-size: 0.95rem;
-    max-width: 400px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: var(--z-maximum);
-    animation: slideInRight var(--transition-normal) forwards;
-}
-
-.feedback-message.success {
-    background: rgba(45, 90, 70, 0.95);
-    border: 1px solid rgba(45, 90, 70, 0.2);
-}
-
-.feedback-message.error {
-    background: rgba(169, 61, 61, 0.95);
-    border: 1px solid rgba(169, 61, 61, 0.2);
-}
-
-.feedback-message i {
-    font-size: 1.2rem;
-
-}
-
-.feedback-message {
-    background: rgba(255, 82, 82, 0.95);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    animation: slideInRight 0.3s forwards;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
+    updateStudent(id, campo, valor) {
+        const aluno = this.alunos.find(a => a.id === id);
+        if (!aluno) return;
+
+        aluno[campo] = valor;
+
+        if (campo === 'status') {
+            const statusButtons = document.querySelector(`.student-card[data-id="${id}"] .status-buttons`);
+            if (statusButtons) {
+                statusButtons.innerHTML = this.createStatusButtons(aluno);
+            }
+
+            // Gerencia o container de proof link
+            if (valor === 3) { // Status "Caiu"
+                this.addProofContainer(id);
+            } else {
+                this.removeProofContainer(id);
+            }
+        }
     }
-    to {
-        opacity: 1;
-        transform: translateX(0);
+
+async handleSubmit(e) {
+        e.preventDefault();
+        if (this.isLoading) return;
+
+        const form = e.target;
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        // Validações
+        const validations = [
+            { field: form.nick, message: 'Digite o nickname do instrutor' },
+            { field: form.dt_inicio, message: 'Selecione a data e hora' },
+            { field: form.curso, message: 'Selecione o curso' },
+            { field: form.local, message: 'Selecione o local' }
+        ];
+
+        // Adiciona validação do tutor se aula tutorada estiver marcada
+        if (form.aula_tutorada.checked) {
+            validations.push({ 
+                field: form.nick_tutor, 
+                message: 'Digite o nickname do tutor' 
+            });
+        }
+
+        // Validação do system confirm para Supervisão de Soldados
+        if (form.curso.value === '0') {
+            const systemConfirm = form.system_confirm;
+            if (!systemConfirm?.checked) {
+                NotificationSystem.error('Confirme a verificação da conta no system');
+                return;
+            }
+        }
+
+        // Verifica todas as validações
+        for (const validation of validations) {
+            if (!validation.field.value.trim()) {
+                NotificationSystem.error(validation.message);
+                validation.field.classList.add('shake');
+                setTimeout(() => validation.field.classList.remove('shake'), 300);
+                return;
+            }
+        }
+
+        if (this.alunos.length === 0) {
+            NotificationSystem.error('Adicione pelo menos um aluno');
+            return;
+        }
+
+        // Verifica se todos os alunos com status "Caiu" têm link comprobatório
+        const alunosSemLink = this.alunos.filter(a => a.status === 3 && !a.proofLink);
+        if (alunosSemLink.length > 0) {
+            NotificationSystem.error('Adicione o link comprobatório para todos os alunos que caíram');
+            return;
+        }
+
+        try {
+            this.isLoading = true;
+            
+            // Atualiza o texto do botão
+            submitButton.innerHTML = `
+                <i class="ri-loader-4-line rotating"></i>
+                <span>Postando...</span>
+            `;
+            submitButton.disabled = true;
+            submitButton.classList.add('button-pulse');
+
+            const formData = {
+                dt_inicio: form.dt_inicio.value,
+                curso: form.curso.value,
+                nick: form.nick.value,
+                local: form.local.value,
+                obs: form.obs.value,
+                aula_tutorada: form.aula_tutorada.checked,
+                nick_tutor: form.aula_tutorada.checked ? form.nick_tutor.value : null,
+                system_confirm: form.curso.value === '0' ? form.system_confirm.checked : null,
+                alunos: this.alunos
+            };
+
+            // Simulação de envio (substitua pelo seu endpoint real)
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Após sucesso
+            this.showSuccessView();
+            NotificationSystem.success('Aula registrada com sucesso!');
+
+        } catch (error) {
+            console.error('Erro ao enviar formulário:', error);
+            NotificationSystem.error('Erro ao registrar aula');
+        } finally {
+            this.isLoading = false;
+            submitButton.disabled = false;
+            submitButton.classList.remove('button-pulse');
+            submitButton.innerHTML = `
+                <i class="ri-save-line"></i>
+                <span>Registrar Aula</span>
+            `;
+        }
+    }
+
+    showSuccessView() {
+        const formCard = document.querySelector('.form-card');
+        if (!formCard) return;
+
+        this.finished = true;
+        formCard.innerHTML = `
+            <div class="finished-view">
+                <div class="success-icon bounce">
+                    <i class="ri-checkbox-circle-line"></i>
+                </div>
+                <h2 class="success-title gradient-text">Aula Registrada com Sucesso!</h2>
+                <p class="success-description">Seus dados foram salvos corretamente.</p>
+                <div class="success-buttons">
+                    <button class="success-button" onclick="window.formView.resetForm()">
+                        <i class="ri-add-circle-line"></i>
+                        <span>Nova Aula</span>
+                    </button>
+                    <a href="https://system.policercc.com.br/companhia/supervisorese" class="success-button" target="_blank">
+                        <i class="ri-shield-star-line"></i>
+                        <span>System</span>
+                    </a>
+                    <button class="success-button">
+                        <i class="ri-file-excel-2-line"></i>
+                        <span>Planilha</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    resetForm() {
+        window.location.reload();
+    }
+
+    loadQueryParams() {
+        const params = new URLSearchParams(window.location.search);
+        
+        const fields = ['nick', 'local', 'curso'];
+        fields.forEach(field => {
+            const value = params.get(field);
+            if (value) {
+                const input = document.querySelector(`[name="${field}"]`);
+                if (input) input.value = value;
+            }
+        });
+
+        // Verifica se precisa mostrar o checkbox do system após carregar o curso
+        const cursoValue = params.get('curso');
+        if (cursoValue === '0') {
+            this.handleCursoChange({ target: { value: '0' } });
+        }
     }
 }
 
-::-webkit-scrollbar {
-    width: 10px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(28, 41, 34, 0.2);
-    border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border-radius: 5px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-light);
-}
-/* View de Sucesso */
-.finished-view {
-    text-align: center;
-    padding: var(--spacing-xl);
-    animation: fadeIn var(--transition-normal);
-}
-
-.success-icon {
-    font-size: 4rem;
-    color: var(--accent);
-    margin-bottom: var(--spacing-lg);
-    animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.success-title {
-    font-size: 2rem;
-    margin-bottom: var(--spacing-md);
-    background: linear-gradient(
-        135deg, 
-        #189600 0%,
-        #25c935 25%,
-        #1eb500 50%,
-        #25c935 75%,
-        #189600 100%
-    );
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: gradient-animation 5s ease infinite;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.success-description {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-xl);
-    animation: fadeInUp 0.6s ease forwards 0.2s;
-}
-
-.success-buttons {
-    display: flex;
-    gap: var(--spacing-md);
-    justify-content: center;
-    animation: fadeInUp 0.6s ease forwards 0.4s;
-}
-
-.success-button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: var(--radius-md);
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: all var(--transition-normal);
-    cursor: pointer;
-}
-
-.success-button:hover {
-    background: var(--glass-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.success-button i {
-    font-size: 1.2rem;
-}
-
-/* Botão Principal (Submit) */
-.button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-sm);
-    padding: 12px 24px;
-    border-radius: var(--radius-md);
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    border: none;
-    position: relative;
-    overflow: hidden;
-}
-
-.button.primary {
-    background: var(--gradient-primary);
-    background-size: 200% 200%;
-    color: white;
-    animation: gradient-animation 15s ease infinite;
-    box-shadow: 0 4px 15px rgba(44, 74, 62, 0.3);
-}
-
-.button.primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(44, 74, 62, 0.4);
-}
-
-.button.primary:active {
-    transform: translateY(0);
-}
-
-.button.primary.loading {
-    background: var(--accent-dark);
-    pointer-events: none;
-    animation: buttonPulse 1.5s infinite;
-}
-
-@keyframes buttonPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-.proof-container {
-    background: rgba(28, 41, 34, 0.3);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    margin-top: var(--spacing-sm);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.proof-input-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.proof-input-group input {
-    flex: 1;
-    background: rgba(28, 41, 34, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    color: var(--text-primary);
-}
-
-/* Footer */
-.footer {
-    text-align: center;
-    padding: var(--spacing-lg) var(--spacing-md);
-    color: var(--text-tertiary);
-    font-size: 0.9rem;
-    position: relative;
-    margin-top: auto;
-}
-
-.footer-divider {
-    height: 1px;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(44, 74, 62, 0.1),
-        transparent
-    );
-    margin-bottom: var(--spacing-lg);
-}
-
-.tooltip::after {
-    color: var(--text-primary) !important;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 1000;
-}
-
-/* Responsividade */
-@media (max-width: 1024px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .success-buttons {
-        flex-direction: column;
-    }
-
-    .feedback-message {
-        left: var(--spacing-md);
-        right: var(--spacing-md);
-        text-align: center;
-        justify-content: center;
-    }
-
-    .form-card {
-        padding: var(--spacing-lg);
-    }
-
-    .main-title img {
-        width: 60px;
-        height: 60px;
-    }
-}
-
-@media (max-width: 480px) {
-    .main-title h1 {
-        font-size: 1.8rem;
-    }
-
-    .button {
-        width: 100%;
-    }
-
-    .students-input-group {
-        flex-direction: column;
-    }
-
-    .add-student-button {
-        width: 100%;
-        height: 42px;
-    }
-
-    .main-title img {
-        width: 50px;
-        height: 50px;
-    }
-}
-
-/* Correções de Acessibilidade */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
-}
-
-.button:focus-visible,
-.input-field:focus-visible,
-.select-field:focus-visible,
-.textarea-field:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-}
+// Inicialização global
+window.formView = new FormView();
