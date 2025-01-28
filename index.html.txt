@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Aplicação</title>
+    
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <!-- Nossos estilos -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loader" class="loader">
+        <div class="loader-content">
+            <img src="https://www.habbo.com.br/habbo-imaging/badge/b09034s43131s50134s17113s1711594848847cad78ac939330154be639c58.gif" alt="Badge">
+            <div class="loader-bar"></div>
+        </div>
+    </div>
+
+    <!-- Título Principal -->
+    <div class="main-title">
+        <h1>Registro de Aplicações</h1>
+         <img src="https://www.habbo.com.br/habbo-imaging/badge/b09034s43131s50134s17113s1711594848847cad78ac939330154be639c58.gif" alt="Badge">
+</div>
+    </div>
+
+    <!-- Container Principal -->
+    <div class="form-container">
+        <!-- Efeitos de Glow -->
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+
+        <!-- Card do Formulário -->
+        <div class="form-card">
+            <form id="aula-form" class="form">
+                <div class="form-grid">
+                    <!-- Coluna Principal -->
+                    <div class="form-main">
+                        <!-- Data e Hora -->
+                        <div class="form-field">
+                            <label>
+                                <i class="ri-calendar-event-line"></i>
+                                <span>Data e Hora</span>
+                            </label>
+                            <input type="datetime-local" name="dt_inicio" class="input-field" required>
+                        </div>
+
+                        <!-- Curso -->
+                        <div class="form-field">
+                            <label>
+                                <i class="ri-book-2-line"></i>
+                                <span>Curso</span>
+                            </label>
+                            <select name="curso" class="select-field" required>
+                                <option value="">Selecione o curso</option>
+                                <option value="0">Supervisão de Soldados</option>
+                                <option value="1">Aula de Segurança</option>
+                                <option value="2">Aula de Promotor</option>
+                            </select>
+                        </div>
+
+                        <!-- Adicione após o select de curso -->
+<!-- Checkbox do System (após o select de curso) -->
+<div class="confirm-container fade-in hidden">
+    <label class="checkbox-wrapper">
+        <input type="checkbox" name="system_confirm" required>
+        <span class="checkbox-custom"></span>
+        <span>Confirmo que verifiquei que o soldado criou conta no system</span>
+    </label>
+</div>
+
+                        <!-- Nick do Instrutor -->
+                        <div class="form-field">
+                            <label>
+                                <i class="ri-user-star-line"></i>
+                                <span>Instrutor</span>
+                            </label>
+                            <input type="text" name="nick" class="input-field" placeholder="Seu nickname" required>
+                        </div>
+
+                        <!-- Local -->
+                        <div class="form-field">
+                            <label>
+                                <i class="ri-map-pin-line"></i>
+                                <span>Local</span>
+                            </label>
+                            <select name="local" class="select-field" required>
+                                <option value="">Selecione o local</option>
+                                <option value="0">Batalhões</option>
+                                <option value="1">Corredores</option>
+                                <option value="2">Cabanas do Batalhão Auxiliar</option>
+                                <option value="3">Quarto particular</option>
+                                <option value="4">Sala de aplicação 1</option>
+                                <option value="5">Sala de aplicação 2</option>
+                                <option value="6">Sala de aplicação 3</option>
+                                <option value="7">Sala de aplicação 4</option>
+                            </select>
+                        </div>
+
+                        <!-- Observações -->
+                        <div class="form-field">
+                            <label>
+                                <i class="ri-file-text-line"></i>
+                                <span>Observações</span>
+                            </label>
+                            <textarea name="obs" class="textarea-field" placeholder="Registre aqui suas observações sobre a aula..."></textarea>
+                        </div>
+
+                        <!-- Aula Tutorada -->
+                        <div class="form-field">
+                            <label class="checkbox-wrapper">
+                                <input type="checkbox" name="aula_tutorada">
+                                <span class="checkbox-custom"></span>
+                                <span>Aula Tutorada</span>
+                            </label>
+                        </div>
+
+                        <!-- Nick do Tutor -->
+                        <div class="form-field tutor-field hidden">
+                            <label>
+                                <i class="ri-user-follow-line"></i>
+                                <span>Tutor</span>
+                            </label>
+                            <input type="text" name="nick_tutor" class="input-field" placeholder="Nickname do tutor">
+                        </div>
+                    </div>
+
+                    <!-- Seção de Alunos -->
+<div class="students-section">
+    <div class="students-header">
+        <div class="students-input-group">
+            <input type="text" id="new-student-input" class="input-field" placeholder="Nome do aluno">
+            <button type="button" class="add-student-button tooltip" data-tooltip="Adicionar aluno">
+                <i class="ri-user-add-line"></i>
+            </button>
+        </div>
+    </div>
+
+                        <div id="students-list" class="students-list">
+                            <!-- Alunos serão adicionados dinamicamente aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botão de Envio -->
+                <!-- Botão de Envio -->
+<div class="button-group">
+    <button type="submit" class="button primary">
+        <i class="ri-save-line"></i>
+        <span>Registrar Aula</span>
+    </button>
+</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-divider"></div>
+        <div class="footer-content">
+           Copyright © 2025 yKatyusha & cralw16 All rights reserved
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/formView.js"></script>
+</body>
+</html>
