@@ -67,8 +67,7 @@
                             </select>
                         </div>
 
-                        <!-- Adicione após o select de curso -->
-<!-- Checkbox do System (após o select de curso) -->
+                        <!-- Checkbox do System (após o select de curso) -->
 <div class="confirm-container fade-in hidden">
     <label class="checkbox-wrapper">
         <input type="checkbox" name="system_confirm" required>
@@ -143,14 +142,12 @@
             </button>
         </div>
     </div>
-
                         <div id="students-list" class="students-list">
                             <!-- Alunos serão adicionados dinamicamente aqui -->
                         </div>
                     </div>
                 </div>
 
-                <!-- Botão de Envio -->
                 <!-- Botão de Envio -->
 <div class="button-group">
     <button type="submit" class="button primary">
